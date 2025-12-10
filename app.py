@@ -5,6 +5,12 @@ import numpy as np
 import streamlit as st
 import plotly.graph_objects as go
 
+# Page config includes school name
+st.set_page_config(page_title='仁濟醫院第二中學─數學建模｜330 mL Container Surface Area (Web)', layout='wide')
+
+# ===== Top banner =====
+st.markdown('<div style="text-align:center;font-size:22px;font-weight:700;padding:8px 0;">仁濟醫院第二中學─數學建模</div>', unsafe_allow_html=True)
+
 V_TARGET_CM3 = 330.0
 
 # --- Geometry functions ---
@@ -50,14 +56,12 @@ def square_pyramid_given_b(b_cm: float):
     return h_cm, A_total_cm2
 
 # --- UI ---
-st.set_page_config(page_title='330 mL Container Surface Area (Web)', layout='wide')
 st.title('330 mL Container Surface Area Calculator')
 
 shape = st.radio('選擇形狀 Shape', ['Cylinder', 'Frustum', 'Cuboid', 'Cube', 'Square Pyramid'], horizontal=True)
 
 col1, col2 = st.columns([1,1])
 
-# Predeclare variables used in plotting
 r = rt = rb = L = W = H = a = b = h = None
 
 with col1:
@@ -104,7 +108,6 @@ with col1:
 """)
 
 with col2:
-    # 3D Plotly figure
     fig = go.Figure()
 
     if shape == 'Cylinder' and r is not None and h is not None:
@@ -144,18 +147,42 @@ with col2:
         x0, x1 = -W/2.0, W/2.0
         y0, y1 = 0.0, L
         z0, z1 = 0.0, H
-        X = [x0,x1,x1,x0, x0,x1,x1,x0]
-        Y = [y0,y0,y1,y1, y0,y0,y1,y1]
-        Z = [z0,z0,z0,z0, z1,z1,z1,z1]
-        fig.add_mesh3d(x=X, y=Y, z=Z, opacity=0.5)
+        verts = np.array([
+            [x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],
+            [x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]
+        ])
+        faces = np.array([
+            [0,1,2],[0,2,3],
+            [4,5,6],[4,6,7],
+            [0,1,5],[0,5,4],
+            [1,2,6],[1,6,5],
+            [2,3,7],[2,7,6],
+            [3,0,4],[3,4,7],
+        ])
+        i, j, k = faces[:,0], faces[:,1], faces[:,2]
+        fig.add_trace(go.Mesh3d(x=verts[:,0], y=verts[:,1], z=verts[:,2],
+                                i=i, j=j, k=k,
+                                color='#3b82f6', opacity=0.5))
     elif shape == 'Cube' and a is not None:
         x0, x1 = -a/2.0, a/2.0
         y0, y1 = 0.0, a
         z0, z1 = 0.0, a
-        X = [x0,x1,x1,x0, x0,x1,x1,x0]
-        Y = [y0,y0,y1,y1, y0,y0,y1,y1]
-        Z = [z0,z0,z0,z0, z1,z1,z1,z1]
-        fig.add_mesh3d(x=X, y=Y, z=Z, opacity=0.5)
+        verts = np.array([
+            [x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],
+            [x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]
+        ])
+        faces = np.array([
+            [0,1,2],[0,2,3],
+            [4,5,6],[4,6,7],
+            [0,1,5],[0,5,4],
+            [1,2,6],[1,6,5],
+            [2,3,7],[2,7,6],
+            [3,0,4],[3,4,7],
+        ])
+        i, j, k = faces[:,0], faces[:,1], faces[:,2]
+        fig.add_trace(go.Mesh3d(x=verts[:,0], y=verts[:,1], z=verts[:,2],
+                                i=i, j=j, k=k,
+                                color='#3b82f6', opacity=0.5))
     elif shape == 'Square Pyramid' and b is not None and h is not None:
         half_b = b/2.0
         base_x = np.array([-half_b, half_b, half_b, -half_b])
